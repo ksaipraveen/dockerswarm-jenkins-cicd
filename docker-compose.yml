@@ -1,0 +1,23 @@
+version: "3"
+services:
+  tomcat:
+    build: /home/ubuntu/jenkinsdocker
+    image: skandikatta/saiwebapplication:Latest
+    container_name: DOCKERJENKINS
+    ports:
+      - 8080:8080
+    networks:
+      - tomcatnetwork
+    deploy:  
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 20s
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5  
+    
+networks:
+  tomcatnetwork:
+    driver: bridge
