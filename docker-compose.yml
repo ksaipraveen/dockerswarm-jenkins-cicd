@@ -5,9 +5,8 @@ services:
     image: skandikatta/saiwebapplication:Latest
     container_name: DOCKERJENKINS
     ports:
-      - 8080:8080
-    networks:
-      - tomcatnetwork
+      - 8081:8080
+    
     deploy:  
       replicas: 3
       update_config:
@@ -19,5 +18,6 @@ services:
         max_attempts: 5  
     
 networks:
-  tomcatnetwork:
-    driver: bridge
+  default:
+    external:
+      name: tomcatnetwork //overlay network already created//
