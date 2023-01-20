@@ -1,0 +1,34 @@
+node{
+    
+   def buildNumber = BUILD_NUMBER
+   
+    stage("Git CheckOut"){
+        git url: 'https://github.com/ksaipraveen/devops-cicd-docker-jenkins.git',branch: 'master' 
+    }
+    
+    stage(" Maven Clean Package"){
+      def mavenHome =  tool name: "Maven", type: "maven"
+       sh "${mavenHome}/bin/mvn clean package"
+    } 
+    
+     stage("Build Docker Image") {
+         sh "docker build -t skandikatta/saiwebapplication:${buildNumber} ."
+    }
+    
+      stage("Docker Push"){
+        
+       withCredentials([string(credentialsId: 'Docker_Repo_Pwd', variable: 'Docker_Repo_Pwd')]) {
+          sh "docker login -u skandikatta -p ${Docker_Repo_Pwd}"   
+       }
+       
+        sh "docker push skandikatta/saiwebapplication:${buildNumber}"
+    }
+    stage("Deploy to docker swarm"){
+        
+        sshagent(['docker_swarm_manager']) {
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@masternodeIP docker service rm mavenwebappcontainer || true'
+            sh "ssh ubuntu@masternodeIP docker service create --name mavenwebapp -p 8080:8080 --replicas 3 skandikatta/saiwebapplication:${buildNumber}"
+    }
+  }
+    
+}
